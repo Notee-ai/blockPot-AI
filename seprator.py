@@ -1,3 +1,4 @@
+#seprator
 import pandas as pd
 
 # Load the Excel file (first sheet by default)
