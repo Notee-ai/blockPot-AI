@@ -4,9 +4,9 @@ async function main() {
   const LogStorage = await hre.ethers.getContractFactory("LogStorage");
   const logStorage = await LogStorage.deploy();
 
-  await logStorage.deployed();
+  await logStorage.waitForDeployment();
 
-  console.log("LogStorage deployed to:", logStorage.address);
+  console.log("LogStorage deployed to:", await logStorage.getAddress());
 }
 
 main().catch((error) => {
