@@ -151,3 +151,9 @@ Show a blockchain explorer view:
     Integrate with VirusTotal API to scan URLs/files they try to use
 
     Add a threat heatmap (cool visuals)
+
+They Want...	You Give Them...
+Real-world application	SSH trap + NLP + blockchain logging
+AI/ML usage	Real-time threat classification
+Good UI/UX	Dashboard with live updates + visual logs
+Innovation	Using honeypot + AI + blockchain together
