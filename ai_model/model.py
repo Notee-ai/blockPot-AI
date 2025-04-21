@@ -164,7 +164,7 @@ class CommandClassifier:
 if __name__ == "__main__":
     # Example usage
     classifier = CommandClassifier()
-    classifier.train("commands-classification-cleaned.csv")
+    classifier.train("data/commands-classification-cleaned.csv")
     classifier.save_model("trained_command_classifier")
     
     # Test the model with a few examples
@@ -180,4 +180,4 @@ if __name__ == "__main__":
         print(f"Classification: {result['classification']}")
         print(f"Confidence: {result['confidence']:.4f}")
         print("Probabilities:", result['probabilities'])
-        print()#done
+        print()
