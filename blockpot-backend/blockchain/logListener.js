@@ -37,7 +37,7 @@ init().then(() => {
       await tx.wait();
       console.log("✅ Log stored in blockchain:", tx.hash);
     } catch (err) {
-      console.error("❌ Error storing log:", err.message);
+      console.error(" Error storing log:", err.message);
     }
   });
 });
