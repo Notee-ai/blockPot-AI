@@ -3,14 +3,9 @@ const express = require('express');
 const http = require('http');
 const WebSocket = require('ws');
 const { ethers } = require('ethers');
-const fs = require('fs');
-const cors = require('cors');
-const path = require('path');
+const cowrieEmitter = require('./cowrie-log-reader/cowrie-log-reader'); // Adjust path if needed
 
 const app = express();
-app.use(cors());
-app.use(express.json());
-
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
@@ -21,41 +16,37 @@ const provider = new ethers.providers.JsonRpcProvider(process.env.SEPOLIA_RPC_UR
 const wallet = new ethers.Wallet(process.env.PRIVATE_KEY, provider);
 const contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, wallet);
 
-// In-memory cache to store logs for REST API
-let cachedLogs = [];
+// Store connected clients
+let clients = [];
 
-// WebSocket for live updates from frontend
 wss.on('connection', (ws) => {
     console.log('Frontend connected via WebSocket');
+    clients.push(ws);
 
-    ws.on('message', async (data) => {
-        const log = JSON.parse(data);
-        const { ip, command, threatLevel, timestamp } = log;
-
-        try {
-            const tx = await contract.storeLog(ip, command, threatLevel, timestamp);
-            await tx.wait();
-            console.log('Stored on blockchain:', tx.hash);
-            cachedLogs.push({ ip, command, threatLevel, timestamp, txHash: tx.hash });
-
-            ws.send(JSON.stringify({ status: 'stored', txHash: tx.hash }));
-        } catch (err) {
-            console.error('Blockchain error:', err);
-            ws.send(JSON.stringify({ status: 'error', message: err.message }));
-        }
+    ws.on('close', () => {
+        clients = clients.filter(client => client !== ws);
     });
 });
 
-// REST endpoint for frontend dashboard
-app.get('/api/logs', (req, res) => {
-    res.json(cachedLogs);
+// Listen to Cowrie logs and broadcast/store
+cowrieEmitter.on('cowrieLog', async ({ ip, command, threatLevel, timestamp }) => {
+    const message = JSON.stringify({ command });
+
+    // Send to frontend terminal
+    clients.forEach(client => {
+        if (client.readyState === WebSocket.OPEN) {
+            client.send(message);
+        }
+    });
+
+    // Store on blockchain
+    try {
+        const tx = await contract.storeLog(ip, command, threatLevel, timestamp);
+        await tx.wait();
+        console.log('Stored on blockchain:', tx.hash);
+    } catch (err) {
+        console.error('Blockchain error:', err);
+    }
 });
 
-// Serve frontend (optional for deployment)
-app.use(express.static(path.join(__dirname, '../frontend/dist')));
-app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../frontend/dist/index.html'));
-});
-
-const PORT = process.env.PORT || 3001;
-server.listen(PORT, () => console.log(`Backend running on port ${PORT}`));
+server.listen(3001, () => console.log('Backend WebSocket + Blockchain running on port 3001'));
