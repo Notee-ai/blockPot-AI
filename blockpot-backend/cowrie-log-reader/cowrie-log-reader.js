@@ -3,7 +3,7 @@ const path = require('path');
 const readline = require('readline');
 
 // Path to Cowrie JSON log file
-const logFilePath = '/full/path/to/cowrie/var/log/cowrie/cowrie.json'; // UPDATE THIS!
+const logFilePath = '/cowrie/var/log/cowrie/cowrie.json'; // UPDATE THIS!
 
 const readStream = fs.createReadStream(logFilePath, {
   encoding: 'utf8',
